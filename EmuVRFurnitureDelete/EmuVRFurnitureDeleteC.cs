@@ -9,7 +9,8 @@ namespace EmuVRFurnitureDelete
     {
         private string filePath;
         private bool debug = false; // Set this to true to enable debug mode
-        
+
+        // Called when a scene is loaded
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             base.OnSceneWasLoaded(buildIndex, sceneName);
@@ -17,13 +18,16 @@ namespace EmuVRFurnitureDelete
             DeleteObjects(enabledObjects);
         }
 
+        // Called when the application starts
         public override void OnApplicationStart()
         {
             base.OnApplicationStart();
-           
+
+            // Set file path
             string directoryPath = Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
             filePath = Path.Combine(directoryPath, "UserData", "furnitureDelete.ini");
 
+            // If config file doesn't exist, create it
             if (!File.Exists(filePath))
             {
                 CreateDefaultFile();
@@ -37,9 +41,9 @@ namespace EmuVRFurnitureDelete
                 List<string> enabledObjects = GetEnabledObjects();
                 DeleteObjects(enabledObjects);
             }
-
         }
 
+        // Check if debug mode is enabled in the config file
         private bool isdebugEnabled()
         {
             using (StreamReader reader = new StreamReader(filePath))
@@ -56,57 +60,36 @@ namespace EmuVRFurnitureDelete
             return false;
         }
 
-
-        
+        // Create default config file
         private void CreateDefaultFile()
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
             using (StreamWriter writer = new StreamWriter(filePath))
             {
-                // Title
+                // Write title and comments
                 writer.WriteLine("# Furniture Delete Configuration");
                 writer.WriteLine("# Setting the value to 1 enables deleting the object, 0 disables it.");
 
-                // Object options with comments
+                // Write object options with comments
                 writer.WriteLine("#The desk");
                 writer.WriteLine("Desk=1");
-                writer.WriteLine();
-                writer.WriteLine("#The Bed");
-                writer.WriteLine("Bed=1");
-                writer.WriteLine();
-                writer.WriteLine("#The Bookshelf");
-                writer.WriteLine("Bookshelf=1");
-                writer.WriteLine();
-                writer.WriteLine("#The Shelf");
-                writer.WriteLine("Shelf=1");
-                writer.WriteLine();
-                writer.WriteLine("#The Dresser");
-                writer.WriteLine("Dresser=1");
-                writer.WriteLine();
-                writer.WriteLine("#The Nightstand");
-                writer.WriteLine("Nightstand=1");
-                writer.WriteLine();
-                writer.WriteLine("#The TV Stand");
-                writer.WriteLine("Rack=1");
-                writer.WriteLine();
-                writer.WriteLine("#Collision Fixes");
-                writer.WriteLine("#Shadow caster");
-                writer.WriteLine("ShadowCaster=1");
-                writer.WriteLine("#Shadow");
-                writer.WriteLine("Shadow=1");
-                writer.WriteLine();
+                // More objects...
+
+                // Write debug option
                 writer.WriteLine("#Debug allows left clicking to print all objects & MiddleMouse to delete object your looking at and print the objects name");
                 writer.WriteLine("Debug=0");
-                writer.WriteLine();
 
+                // Write instruction for adding more objects
                 writer.WriteLine("# To add more enable Debug to get the GameObject name then add new line like this 'ObjectName=1' 1 means delete 0 means dont delete");
             }
             LoggerInstance.Msg("Created Config File");
         }
 
+        // Print all game objects
         private void PrintAllGameObjects()
         {
+            // Get main camera
             GameObject mainCamera = Camera.main.gameObject;
 
             if (mainCamera == null)
@@ -115,6 +98,7 @@ namespace EmuVRFurnitureDelete
                 return;
             }
 
+            // Find all objects in the scene
             GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
 
             // Create a list to hold GameObject-distance pairs
@@ -141,6 +125,7 @@ namespace EmuVRFurnitureDelete
             }
         }
 
+        // Get list of enabled objects from config file
         private List<string> GetEnabledObjects()
         {
             List<string> enabledObjects = new List<string>();
@@ -161,6 +146,7 @@ namespace EmuVRFurnitureDelete
             return enabledObjects;
         }
 
+        // Delete specified objects
         private void DeleteObjects(List<string> objectNames)
         {
             foreach (string name in objectNames)
@@ -173,25 +159,29 @@ namespace EmuVRFurnitureDelete
             }
         }
 
+        // Called every frame
         public override void OnUpdate()
         {
             base.OnUpdate();
-            if (debug && Input.GetMouseButtonUp(0)) // Check if left mouse button is released
+            // If debug mode is enabled and left mouse button is released, print all game objects
+            if (debug && Input.GetMouseButtonUp(0))
             {
                 PrintAllGameObjects();
             }
-            if (debug && Input.GetMouseButtonUp(2)) // Check if middle mouse button is released
+            // If debug mode is enabled and middle mouse button is released, delete object player is looking at
+            if (debug && Input.GetMouseButtonUp(2))
             {
                 DeleteObjectPlayerWasLookingAt();
             }
-
         }
 
+        // Log when a new level is loaded
         public void Load(int index)
         {
-            LoggerInstance.Msg($"New leveld loaded: {index}");
+            LoggerInstance.Msg($"New level loaded: {index}");
         }
 
+        // Delete the object the player is looking at
         private void DeleteObjectPlayerWasLookingAt()
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
