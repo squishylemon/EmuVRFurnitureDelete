@@ -16,6 +16,11 @@ namespace EmuVRFurnitureDelete
             base.OnSceneWasLoaded(buildIndex, sceneName);
             List<string> enabledObjects = GetEnabledObjects();
             DeleteObjects(enabledObjects);
+
+            if (debug)
+            {
+                LoggerInstance.Msg("DebugMode Enabled");
+            }
         }
 
         // Called when the application starts
@@ -32,12 +37,14 @@ namespace EmuVRFurnitureDelete
             {
                 CreateDefaultFile();
                 debug = isdebugEnabled();
+                
                 List<string> enabledObjects = GetEnabledObjects();
                 DeleteObjects(enabledObjects);
             }
             else
             {
                 debug = isdebugEnabled();
+                
                 List<string> enabledObjects = GetEnabledObjects();
                 DeleteObjects(enabledObjects);
             }
@@ -77,7 +84,7 @@ namespace EmuVRFurnitureDelete
                 // More objects...
 
                 // Write debug option
-                writer.WriteLine("#Debug allows left clicking to print all objects & MiddleMouse to delete object your looking at and print the objects name");
+                writer.WriteLine("#Debug allows pressing the '1 key' to print all objects & the '2 key' to delete object your looking at and print the objects name");
                 writer.WriteLine("Debug=0");
 
                 // Write instruction for adding more objects
@@ -159,27 +166,28 @@ namespace EmuVRFurnitureDelete
             }
         }
 
+
         // Called every frame
         public override void OnUpdate()
         {
             base.OnUpdate();
-            // If debug mode is enabled and left mouse button is released, print all game objects
-            if (debug && Input.GetMouseButtonUp(0))
+
+            // If debug mode is enabled and '1' key is released, print all game objects
+            if (debug && Input.GetKeyUp(KeyCode.Alpha1))
             {
                 PrintAllGameObjects();
             }
-            // If debug mode is enabled and middle mouse button is released, delete object player is looking at
-            if (debug && Input.GetMouseButtonUp(2))
+
+            // If debug mode is enabled and '2' key is released, delete object player is looking at
+            if (debug && Input.GetKeyUp(KeyCode.Alpha2))
             {
                 DeleteObjectPlayerWasLookingAt();
             }
+
         }
 
-        // Log when a new level is loaded
-        public void Load(int index)
-        {
-            LoggerInstance.Msg($"New level loaded: {index}");
-        }
+
+        
 
         // Delete the object the player is looking at
         private void DeleteObjectPlayerWasLookingAt()
